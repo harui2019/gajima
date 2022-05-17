@@ -17,7 +17,7 @@ class Gajima():
         Select this name because, when I tested its main function, 
         I was listening "TVXQ - Catch Me (Korean ver.)", and "Gajima" is its lyrics.
         So there is it.
-        
+
     """
 
     @staticmethod
@@ -36,18 +36,20 @@ class Gajima():
 
     def __init__(
         self,
-        prefix: str = '|',
+        prefix: str = '| ',
         desc: str = "Loading",
+        finish_desc: str = "Completed",
         delay: Union[int, float] = 0.1,
         carousel: Union[tuple[str, any],
                         list[tuple[str, any]]] = ('dots', 15, 6),
-        ANSIDecorator: str = '"\u001b[1m"',
+        ANSIDecorator: str = "\u001b[1m",
         leave: bool = True,
 
     ):
         self.delay = delay
         self.prefix = prefix
         self.desc = desc
+        self.finish_desc = finish_desc
         self.ANSIDecorator = ANSIDecorator
         self.leave = leave
 
@@ -72,8 +74,9 @@ class Gajima():
     def loading(self):
         cur = time.time()
         carousel_str = ''
-        decorated_desc = self.ANSIDecorator + self.desc
+        finished_desc = self.ANSIDecorator + self.finish_desc +"\u001b[0m"
         while not self.end:
+            decorated_desc = self.ANSIDecorator + self.desc
             carousel_str = ' '
             for carousel in self.loading_carousel:
                 carousel_str += next(carousel)+' '
@@ -82,12 +85,17 @@ class Gajima():
                   carousel_str + "\u001b[0m"+f' - {round(time.time() - cur, 2)}s', end="\r")
             if self.end:
                 break
+
+        half_placeholder = (" "*(
+            len(decorated_desc+carousel_str+"\u001b[0m")-len(finished_desc)))
+        placeholder = (" "*len(
+            self.prefix+f' - {round(time.time() - cur, 2)}s')
+        ) + half_placeholder
+        print(placeholder, end="\r")
         if self.leave:
-            print(self.prefix+"\u001b[1m", "Completed" +
-                  " "*len(carousel_str)+"\u001b[0m"+f' - {round(time.time() - cur, 2)}s', end="\r")
+            print(self.prefix + finished_desc + half_placeholder + f' - {round(time.time() - cur, 2)}s')
         else:
-            print(" "*len(self.prefix+decorated_desc +
-                  carousel_str + "\u001b[0m"+f' - {round(time.time() - cur, 2)}s'))
+            print(placeholder, end="\r")
 
     def run(self):
         self.end = False
