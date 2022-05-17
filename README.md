@@ -1,12 +1,12 @@
 # Gajima 🔄 🍛 - Anotehr after another loading bar in Python
 
-## are there any other Squidwards(X) python progressbar(O) ?
+## Are there any other Squidwards(X) python progressbar(O) ?
 
 - *A side product of Qurry 🍛 - The Measuring Tool for Renyi Entropy, Loschmidt Echo, and Magnetization Squared, The Library of Some Common Cases*
 
 This is a progressbar which dedicated for Qurry 🍛, due to other progress bar modules make some printing issue when prints only text on jupyter notebook, bringing a not good experince, specific for VS Code Jupyter Notebook.
 
-**This module is far from finished and will update frenquently with the development of Qurry 🍛 .**
+**This module is far from finish and will update frenquently with the development of Qurry 🍛 .**
 
 ---
 
