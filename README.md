@@ -1,4 +1,4 @@
-# Gajima 🔄 🍛 - Anotehr after another loading bar in Python
+# Gajima 🔄 🍛 - Another Loading and Processing Bar in Python Again
 
 ## Are there any other Squidwards(X) python progressbar(O) ?
 
