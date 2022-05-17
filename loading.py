@@ -74,9 +74,9 @@ class Gajima():
         carousel_str = ''
         decorated_desc = self.ANSIDecorator + self.desc
         while not self.end:
-            carousel_str = ''
+            carousel_str = ' '
             for carousel in self.loading_carousel:
-                carousel_str += next(carousel)
+                carousel_str += next(carousel)+' '
             time.sleep(self.delay)
             print(self.prefix+decorated_desc +
                   carousel_str + "\u001b[0m"+f' - {round(time.time() - cur, 2)}s', end="\r")
