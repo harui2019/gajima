@@ -17,6 +17,7 @@ class Gajima():
         Select this name because, when I tested its main function, 
         I was listening "TVXQ - Catch Me (Korean ver.)", and "Gajima" is its lyrics.
         So there is it.
+        
     """
 
     @staticmethod
@@ -65,7 +66,6 @@ class Gajima():
             if not isinstance(params, tuple):
                 params = (params, )
             if params[0] in carousel_dict:
-                print(params)
                 self.loading_carousel.append(
                     carousel_dict[params[0]](*params[1:]))
 
@@ -104,7 +104,7 @@ class Gajima():
     def __enter__(self):
         self.run()
 
-    def __exit__(self, exception):
+    def __exit__(self, exception, exc_val, exc_tb):
         self.stop()
         if exception is not None:
             return False
