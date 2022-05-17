@@ -14,7 +14,7 @@ class Gajima():
 
     - Why this name ?
         It's meaning "Don't leave" in Korean.
-        Select this name because, when I tested its main function, 
+        Select this name because when I tested its main function,
         I was listening "TVXQ - Catch Me (Korean ver.)", and "Gajima" is its lyrics.
         So there is it.
 
