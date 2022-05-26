@@ -9,7 +9,7 @@ from typing import (
 
 
 class Gajima():
-    """Anotehr after another loading bar in Python, 
+    """Another after another loading bar in Python, 
     are there any other Squidwards(X) python progressbar(O) ?
 
     - Why this name ?
@@ -90,7 +90,7 @@ class Gajima():
             len(decorated_desc+carousel_str+"\u001b[0m")-len(finished_desc)))
         placeholder = (" "*len(
             self.prefix+f' - {round(time.time() - cur, 2)}s')
-        ) + half_placeholder
+        ) + half_placeholder + " "*10
         print(placeholder, end="\r")
         if self.leave:
             print(self.prefix + finished_desc + half_placeholder + f' - {round(time.time() - cur, 2)}s')
@@ -111,6 +111,7 @@ class Gajima():
 
     def __enter__(self):
         self.run()
+        return self
 
     def __exit__(self, exception, exc_val, exc_tb):
         self.stop()
