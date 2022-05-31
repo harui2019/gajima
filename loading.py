@@ -7,6 +7,7 @@ from typing import (
     Iterable,
 )
 
+_lock = threading.Lock()
 
 class Gajima():
     """Another after another loading bar in Python, 
@@ -43,6 +44,7 @@ class Gajima():
         self.running = False
         self.end = False
         self.threadLoading = None
+        self.all_placeholder_len = 100
 
         # Preparing iterable objects
         if not isinstance(iterable, Iterable):
@@ -166,17 +168,21 @@ class Gajima():
         carousal_placeholder_len = len(
             decorated_desc+carousel_str+"\u001b[0m") - len(finished_desc)
         progress_placeholder_len = len(end_progress)
-        all_placeholder_len = len(
+        self.all_placeholder_len = len(
             self.prefix+end_time_str) + carousal_placeholder_len + 10
 
-        print(" "*all_placeholder_len, end="\r")
+        print(" "*self.all_placeholder_len, end="\r")
         if self.leave:
             print(
                 self.prefix + finished_desc + end_progress +
                 " "*(carousal_placeholder_len - progress_placeholder_len) +
                 end_time_str)
         else:
-            print(" "*all_placeholder_len, end="\r")
+            print(" "*self.all_placeholder_len, end="\r")
+
+    def gprint(self, *args, **kwargs) -> None:
+        print(" "*self.all_placeholder_len, end="\r")
+        print(*args, **kwargs)
 
     def run(self):
         if self.running:
