@@ -129,6 +129,9 @@ class Gajima():
         return main
 
     def loading(self):
+        """
+        If want to nest, print text need to be independent
+        """
         cur = time.time()
         carousel_str = ''
         finished_desc = self.ANSIDecorator + self.finish_desc + "\u001b[0m"
