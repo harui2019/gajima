@@ -2,11 +2,9 @@ import threading
 import time
 from typing import (
     Union,
-    Optional,
-    Annotated,
     Callable,
     Generator,
-    Iterable
+    Iterable,
 )
 
 
@@ -21,7 +19,6 @@ class Gajima():
         So there is it.
 
     """
-    
 
     def __init__(
         self,
@@ -43,63 +40,62 @@ class Gajima():
         self.ANSIDecorator = ANSIDecorator
         self.leave = leave
 
+        self.running = False
         self.end = False
         self.threadLoading = None
 
-        self.loading_carousel = []
-        if not isinstance(carousel, list):
-            carousel = [carousel]
-            
+        # Preparing iterable objects
         if not isinstance(iterable, Iterable):
             raise ValueError("Getting a not iterable object.")
         self.iterable = [v for v in iterable]
         self._cur_index = 0
         self._iter_len = len(self.iterable)
 
-        carousel_dict = {
+        if not isinstance(carousel, list):
+            carousel = [carousel]
+
+        # Preparing loading and progress carousel
+        self.carousels = []
+        self.loading_carousel_dict = {
             'spinner': self.spinning_cursor,
             'dots': self.moving_dots,
         }
+        self.progress_carousel_dict = {
+            'basic': self.basic_progress_show,
+        }
+
+        is_progress_call = False
         for params in carousel:
             if not isinstance(params, tuple):
                 params = (params, )
-            if params[0] in carousel_dict:
-                self.loading_carousel.append(
-                    carousel_dict[params[0]](*params[1:]))
-                
-    def __iter__(self):
-        # self._cur_index += 1
-        while self._cur_index >= self._iter_len:
-            raise StopIteration
-        self._cur_index += 1
-        return self
 
-    def loading(self):
-        cur = time.time()
-        carousel_str = ''
-        finished_desc = self.ANSIDecorator + self.finish_desc +"\u001b[0m"
-        while not self.end:
-            decorated_desc = self.ANSIDecorator + self.desc
-            carousel_str = ' '
-            for carousel in self.loading_carousel:
-                carousel_str += next(carousel)+' '
-            time.sleep(self.delay)
-            print(self.prefix+decorated_desc +
-                  carousel_str + "\u001b[0m"+f' - {round(time.time() - cur, 2)}s', end="\r")
-            if self.end:
-                break
+            if params[0] in self.loading_carousel_dict:
+                self.carousels.append(
+                    self.loading_carousel_dict[params[0]](*params[1:]))
+            elif params[0] in self.progress_carousel_dict:
+                is_progress_call = True
+                self.carousels.append(
+                    self.progress_carousel_dict[params[0]](*params[1:]))
 
-        half_placeholder = (" "*(
-            len(decorated_desc+carousel_str+"\u001b[0m")-len(finished_desc)))
-        placeholder = (" "*len(
-            self.prefix+f' - {round(time.time() - cur, 2)}s')
-        ) + half_placeholder + " "*10
-        print(placeholder, end="\r")
-        if self.leave:
-            print(self.prefix + finished_desc + half_placeholder + f' - {round(time.time() - cur, 2)}s')
-        else:
-            print(placeholder, end="\r")
-            
+        if not is_progress_call and self._iter_len > 1:
+            self.carousels.append(
+                self.progress_carousel_dict['basic']())
+
+    def add_loading_carousel(
+        self,
+        key: str,
+        loading_carousel: callable,
+    ) -> list[str]:
+        self.loading_carousel_dict[key] = loading_carousel
+        return list(self.loading_carousel_dict.keys())
+
+    def add_progress_carousel(
+        self,
+        key: str,
+        progress_carousel: callable,
+    ) -> list[str]:
+        self.progress_carousel_dict[key] = progress_carousel
+        return list(self.progress_carousel_dict.keys())
 
     @staticmethod
     def spinning_cursor() -> Generator[str, None, None]:
@@ -109,7 +105,7 @@ class Gajima():
 
     @staticmethod
     def moving_dots(
-        length: int = 10, 
+        length: int = 10,
         dots: int = 4
     ) -> Generator[str, None, None]:
         while 1:
@@ -118,7 +114,74 @@ class Gajima():
                 dots_str = dots_str_raw[length-i:2*length-i]
                 yield dots_str
 
+    @staticmethod
+    def basic_progress_show() -> Callable[[int, int], Generator[str, None, None]]:
+        def main(
+            _index: int = 0,
+            _total: int = 1,
+        ) -> Generator[str, None, None]:
+            while 1:
+                _total_str = str(_total)
+                progress_str_raw = f" - {str(_index).rjust(len(_total_str), ' ')}/{_total_str}"
+                yield progress_str_raw
+        return main
+
+    def loading(self):
+        cur = time.time()
+        carousel_str = ''
+        finished_desc = self.ANSIDecorator + self.finish_desc + "\u001b[0m"
+        while not self.end:
+            decorated_desc = self.ANSIDecorator + self.desc
+            carousel_str = ' '
+            for carousel in self.carousels:
+                if isinstance(carousel, Generator):
+                    carousel_str += next(carousel)
+                elif isinstance(carousel, Callable):
+                    carousel_str += next(carousel(
+                        _index=self._cur_index,
+                        _total=self._iter_len,
+                    ))
+                else:
+                    ...
+
+            time.sleep(self.delay)
+            print(
+                self.prefix+decorated_desc +
+                carousel_str+"\u001b[0m"+f' - {round(time.time() - cur, 2)}s',
+                end="\r")
+            if self.end:
+                break
+
+        # Preparing ending title
+        end_progress = ''
+        for carousel in self.carousels:
+            if isinstance(carousel, Callable):
+                end_progress += next(carousel(
+                    _index=self._iter_len,
+                    _total=self._iter_len,
+                ))
+        end_time_str = f' - {round(time.time() - cur, 2)}s'
+
+        # Placeholder
+        carousal_placeholder_len = len(
+            decorated_desc+carousel_str+"\u001b[0m") - len(finished_desc)
+        progress_placeholder_len = len(end_progress)
+        all_placeholder_len = len(
+            self.prefix+end_time_str) + carousal_placeholder_len + 10
+
+        print(" "*all_placeholder_len, end="\r")
+        if self.leave:
+            print(
+                self.prefix + finished_desc + end_progress +
+                " "*(carousal_placeholder_len - progress_placeholder_len) +
+                end_time_str)
+        else:
+            print(" "*all_placeholder_len, end="\r")
+
     def run(self):
+        if self.running:
+            return
+        self.running = True
         self.end = False
         self.threadLoading = threading.Thread(target=self.loading)
         self.threadLoading.start()
@@ -129,33 +192,15 @@ class Gajima():
             self.threadLoading.join()
         else:
             print("Loading is not active.")
-            
-    def progressbar(self):
-        cur = time.time()
-        carousel_str = ''
-        finished_desc = self.ANSIDecorator + self.finish_desc +"\u001b[0m"
-        while not self.end:
-            decorated_desc = self.ANSIDecorator + self.desc
-            carousel_str = ' '
-            for carousel in self.loading_carousel:
-                carousel_str += next(carousel)+' '
-            time.sleep(self.delay)
-            print(self.prefix+decorated_desc +
-                  carousel_str + "\u001b[0m"+f' - {round(time.time() - cur, 2)}s', end="\r")
-            if self.end:
-                break
 
-        half_placeholder = (" "*(
-            len(decorated_desc+carousel_str+"\u001b[0m")-len(finished_desc)))
-        placeholder = (" "*len(
-            self.prefix+f' - {round(time.time() - cur, 2)}s')
-        ) + half_placeholder + " "*10
-        print(placeholder, end="\r")
-        if self.leave:
-            print(self.prefix + finished_desc + half_placeholder + f' - {round(time.time() - cur, 2)}s')
-        else:
-            print(placeholder, end="\r")
-            
+    def __iter__(self):
+        if self._cur_index == 0:
+            self.run()
+        while self._cur_index < self._iter_len:
+            yield self.iterable[self._cur_index]
+            self._cur_index += 1
+            if self._cur_index >= self._iter_len:
+                self.stop()
 
     def __enter__(self):
         self.run()
@@ -165,3 +210,10 @@ class Gajima():
         self.stop()
         if exception is not None:
             return False
+
+
+def grange(*args, **kwargs) -> Gajima:
+    """
+    A shortcut like :func:`trange` from :module:`tqdm`
+    """
+    return Gajima(range(*args), **kwargs)
