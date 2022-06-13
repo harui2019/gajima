@@ -27,7 +27,7 @@ class Gajima():
         prefix: str = '| ',
         desc: str = "Loading",
         finish_desc: str = "Completed",
-        delay: Union[int, float] = 0.1,
+        delay: Union[int, float] = 0.05,
         carousel: Union[tuple[str, any],
                         list[tuple[str, any]]] = ('dots', 15, 6),
         ANSIDecorator: str = "\u001b[1m",
