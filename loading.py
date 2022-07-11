@@ -9,6 +9,7 @@ from typing import (
 
 _lock = threading.Lock()
 
+
 class Gajima():
     """Another after another loading bar in Python, 
     are there any other Squidwards(X) python progressbar(O) ?
@@ -128,6 +129,14 @@ class Gajima():
                 yield progress_str_raw
         return main
 
+    time_ndigits = 2
+
+    def time_takes(
+        self,
+        start: float,
+    ):
+        return " - "+f"{round(time.time() - start, self.time_ndigits)}".rjust(4, '0')+"s"
+
     def loading(self):
         """
         If want to nest, print text need to be independent
@@ -135,8 +144,9 @@ class Gajima():
         cur = time.time()
         carousel_str = ''
         finished_desc = self.ANSIDecorator + self.finish_desc + "\u001b[0m"
+        decorated_desc = self.ANSIDecorator + self.desc + "\u001b[0m"
         while not self.end:
-            decorated_desc = self.ANSIDecorator + self.desc
+            decorated_desc = self.ANSIDecorator + self.desc + "\u001b[0m"
             carousel_str = ' '
             for carousel in self.carousels:
                 if isinstance(carousel, Generator):
@@ -152,7 +162,7 @@ class Gajima():
             time.sleep(self.delay)
             print(
                 self.prefix+decorated_desc +
-                carousel_str+"\u001b[0m"+f' - {round(time.time() - cur, 2)}s',
+                carousel_str+self.time_takes(cur),
                 end="\r")
             if self.end:
                 break
@@ -165,11 +175,11 @@ class Gajima():
                     _index=self._iter_len,
                     _total=self._iter_len,
                 ))
-        end_time_str = f' - {round(time.time() - cur, 2)}s'
+        end_time_str = self.time_takes(cur)
 
         # Placeholder
         carousal_placeholder_len = len(
-            decorated_desc+carousel_str+"\u001b[0m") - len(finished_desc)
+            decorated_desc+carousel_str) - len(finished_desc)
         progress_placeholder_len = len(end_progress)
         self.all_placeholder_len = len(
             self.prefix+end_time_str) + carousal_placeholder_len + 10
