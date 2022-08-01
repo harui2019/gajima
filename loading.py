@@ -1,3 +1,4 @@
+from math import log10
 import threading
 import time
 from typing import (
@@ -129,13 +130,13 @@ class Gajima():
                 yield progress_str_raw
         return main
 
-    time_ndigits = 2
+    time_ndigits = 4
 
     def time_takes(
         self,
         start: float,
     ):
-        return " - "+f"{round(time.time() - start, self.time_ndigits)}".rjust(4, '0')+"s"
+        return " - "+f"{round(time.time() - start, self.time_ndigits)}".ljust(self.time_ndigits+int(log10(time.time()) - start), '0')+"s"
 
     def loading(self):
         """
