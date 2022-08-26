@@ -212,15 +212,19 @@ class Gajima():
             self.threadLoading.join()
         else:
             print("Loading is not active.")
-
+            
     def __iter__(self):
-        if self._cur_index == 0:
-            self.run()
-        while self._cur_index < self._iter_len:
-            yield self.iterable[self._cur_index]
+        return self
+
+    def __next__(self):
+        if self._cur_index < self._iter_len:
+            if self._cur_index == 0:
+                self.run()
             self._cur_index += 1
-            if self._cur_index >= self._iter_len:
-                self.stop()
+            return self.iterable[self._cur_index-1]
+        else:
+            self.stop()
+            raise StopIteration
 
     def __enter__(self):
         self.run()
