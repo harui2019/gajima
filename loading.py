@@ -1,12 +1,8 @@
-from math import log10
 import threading
 import time
-from typing import (
-    Union,
-    Callable,
-    Generator,
-    Iterable,
-)
+import sys
+from math import log10
+from typing import Union, Callable, Generator, Iterable
 
 _lock = threading.Lock()
 
@@ -161,10 +157,9 @@ class Gajima():
                     ...
 
             time.sleep(self.delay)
-            print(
+            sys.stdout.write(
                 self.prefix+decorated_desc +
-                carousel_str+self.time_takes(cur),
-                end="\r")
+                carousel_str+self.time_takes(cur)+"\r")
             if self.end:
                 break
 
@@ -185,17 +180,17 @@ class Gajima():
         self.all_placeholder_len = len(
             self.prefix+end_time_str) + carousal_placeholder_len + 10
 
-        print(" "*self.all_placeholder_len, end="\r")
+        sys.stdout.write(" "*self.all_placeholder_len+"\r")
         if self.leave:
-            print(
+            sys.stdout.write(
                 self.prefix + finished_desc + end_progress +
                 " "*(carousal_placeholder_len - progress_placeholder_len) +
-                end_time_str)
+                end_time_str+"\r")
         else:
-            print(" "*self.all_placeholder_len, end="\r")
+            sys.stdout.write(" "*self.all_placeholder_len+"\r")
 
     def gprint(self, *args, **kwargs) -> None:
-        print(" "*self.all_placeholder_len, end="\r")
+        sys.stdout.write(" "*self.all_placeholder_len+"\r")
         print(*args, **kwargs)
 
     def run(self):
